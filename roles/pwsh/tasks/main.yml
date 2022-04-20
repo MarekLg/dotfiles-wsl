@@ -1,0 +1,42 @@
+- name: set powershell path
+  set_fact:
+    config_path: "{{ ansible_env.HOME }}/.config/powershell"
+
+- name: install powershell
+  become: yes
+  apt:
+    name: powershell
+    state: latest
+    update_cache: yes
+
+- name: ensure powershell config directory
+  file:
+    path: "{{ config_path }}"
+    state: directory
+
+- name: download powershell config gist
+  uri:
+    url: https://api.github.com/gists/a1b635d4f3f6ed188ce70175c0984ba0
+  register: powershell_config_gist
+
+- name: copy powershell profile
+  copy:
+    dest: "{{ config_path }}/profile.ps1"
+    content: "{{ powershell_config_gist.json.files['profile-common.ps1'].content }}"
+
+- name: set pwsh as default shell
+  user:
+    name: "{{ ansible_user_id }}"
+    shell: /usr/bin/pwsh
+
+- name: install oh-my-posh
+  become: yes
+  get_url:
+    url: https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64
+    dest: /usr/local/bin/oh-my-posh
+    mode: +x
+
+- name: copy oh-my-posh theme
+  copy:
+    dest: "{{ config_path }}/theme.omp.json"
+    content: "{{ powershell_config_gist.json.files['theme.omp.json'].content }}"

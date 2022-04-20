@@ -1,0 +1,5 @@
+---
+- name: register microsoft repository gpg keys
+  become: yes
+  apt:
+    deb: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
